@@ -1,0 +1,71 @@
+name: CI Agent Pipeline
+
+# User Story 1: Proactive Workflow Execution
+# Trigger on Push (to main) and Pull Request events (open, update, reopen)
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ "main" ]
+
+jobs:
+  # User Story 2 & 3: Multi-system Interaction & Full Test Execution
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run test
+        # If this fails, the Agent should capture the exit code and logs.
+
+  # User Story 4: Code Quality & Static Analysis
+  lint:
+    name: Static Analysis (Linting)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linting
+        # This will fail if src/utils/dirty.js exists in the project
+        run: npm run lint
+
+  # User Story 5: Security & Dependency Scan
+  security:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Security Audit
+        # This will fail if lodash 4.17.15 is in package.json
+        # 'audit-level=high' ensures we only fail on serious issues
+        run: npm audit --audit-level=high
